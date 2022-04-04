@@ -1,0 +1,9 @@
+api-version: 1.18
+
+name: ${project.name}
+version: ${project.version}
+main: dev.imprex.example.TheMainClassUndSo
+author: Ingrim4
+
+commands:
+  world-tp:
