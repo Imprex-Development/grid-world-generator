@@ -10,7 +10,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
@@ -21,7 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.imprex.gridworldgenerator.GridWorldBuilder;
-import dev.imprex.gridworldgenerator.GridWorldLayerProvider;
 
 public class TheMainClassUndSo extends JavaPlugin {
 
@@ -52,23 +50,7 @@ public class TheMainClassUndSo extends JavaPlugin {
 		new WorldCreator("dev")
 				.type(WorldType.FLAT)
 				.environment(Environment.NORMAL)
-				.generator(new GridWorldBuilder()
-						.withGridSize(10, 10)
-						.withPlotSize(20, 20)
-						.withGapSize(4, 4)
-						.withGapMaterial(Material.WHITE_STAINED_GLASS)
-						.withLayerProvider(GridWorldLayerProvider.create(32, y -> {
-							if (y < 4) {
-								return Material.BLACK_STAINED_GLASS;
-							} else if (y < 27) {
-								return Material.GRAY_STAINED_GLASS;
-							} else if (y < 31) {
-								return Material.BROWN_STAINED_GLASS;
-							} else {
-								return Material.GREEN_STAINED_GLASS;
-							}
-						}))
-						.build())
+				.generator(new GridWorldBuilder().build())
 				.createWorld();
 	}
 

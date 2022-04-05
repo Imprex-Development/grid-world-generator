@@ -1,7 +1,11 @@
 package dev.imprex.gridworldgenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
@@ -50,6 +54,22 @@ public class GridWorldGenerator extends ChunkGenerator {
 
 		this.gapBlockData = gridWorldBuilder.gapBlockData;
 		this.layerProvider = gridWorldBuilder.layerProvider;
+	}
+
+	public List<Plot> getPlots(World world) {
+		List<Plot> plots = new ArrayList<>();
+
+		Location base = new Location(world, this.gapWidth, 0, this.gapHeight);
+
+		for (int x = 0; x < this.gridWidth; x++) {
+			for (int z = 0; z < this.gridHeight; z++) {
+				Location min = base.clone().add(x * this.strideWidth, 0, z * this.strideHeight);
+				Location max = min.clone().add(this.plotWidth, world.getMaxHeight(), this.plotHeight);
+				plots.add(new Plot(min, max));
+			}
+		}
+
+		return plots;
 	}
 
 	@Override
