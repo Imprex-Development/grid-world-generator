@@ -5,5 +5,7 @@ version: ${project.version}
 main: dev.imprex.example.TheMainClassUndSo
 author: Ingrim4
 
+softdepend: [WorldEdit]
+
 commands:
   world-tp:

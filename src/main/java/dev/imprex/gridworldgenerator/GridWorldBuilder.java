@@ -5,6 +5,9 @@ import java.util.Objects;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 
+import dev.imprex.gridworldgenerator.api.GridBlockProvider;
+import dev.imprex.gridworldgenerator.provider.DefaultGridBlockLayerProvider;
+
 /**
  * PARAMETER:
  * - grid-size:
@@ -61,7 +64,7 @@ public final class GridWorldBuilder {
 	int gapHeight = 5;
 
 	BlockData gapBlockData = Material.BARRIER.createBlockData();
-	GridWorldLayerProvider layerProvider = new DefaultGridWorldLayerProvider();
+	GridBlockProvider blockProvider = new DefaultGridBlockLayerProvider();
 
 	public GridWorldBuilder withGridSize(int width, int height) {
 		this.gridWidth = Math.max(1, width);
@@ -90,8 +93,8 @@ public final class GridWorldBuilder {
 		return this;
 	}
 
-	public GridWorldBuilder withLayerProvider(GridWorldLayerProvider layerProvider) {
-		this.layerProvider = Objects.requireNonNull(layerProvider);
+	public GridWorldBuilder withBlockProvider(GridBlockProvider blockProvider) {
+		this.blockProvider = Objects.requireNonNull(blockProvider);
 		return this;
 	}
 

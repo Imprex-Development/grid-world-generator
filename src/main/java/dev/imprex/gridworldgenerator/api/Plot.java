@@ -1,4 +1,4 @@
-package dev.imprex.gridworldgenerator;
+package dev.imprex.gridworldgenerator.api;
 
 import org.bukkit.Location;
 

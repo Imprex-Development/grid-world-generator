@@ -1,5 +1,7 @@
 package dev.imprex.example;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -19,7 +21,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+
 import dev.imprex.gridworldgenerator.GridWorldBuilder;
+import dev.imprex.gridworldgenerator.provider.WorldEditClipboardProvider;
 
 public class TheMainClassUndSo extends JavaPlugin {
 
@@ -47,11 +54,19 @@ public class TheMainClassUndSo extends JavaPlugin {
 			e.printStackTrace();
 		}
 
-		new WorldCreator("dev")
-				.type(WorldType.FLAT)
-				.environment(Environment.NORMAL)
-				.generator(new GridWorldBuilder().build())
-				.createWorld();
+		File file = new File(getDataFolder(), "test.schem");
+		ClipboardFormat format = ClipboardFormats.findByFile(file);
+		try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+			new WorldCreator("dev")
+					.type(WorldType.NORMAL)
+					.environment(Environment.NORMAL)
+					.generator(new GridWorldBuilder()
+							.withBlockProvider(new WorldEditClipboardProvider(reader.read()))
+							.build())
+					.createWorld();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

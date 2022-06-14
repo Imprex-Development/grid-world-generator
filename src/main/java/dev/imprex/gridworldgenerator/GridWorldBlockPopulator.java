@@ -1,23 +1,16 @@
 package dev.imprex.gridworldgenerator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.generator.BiomeProvider;
+import org.bukkit.craftbukkit.v1_18_R2.generator.CraftLimitedRegion;
 import org.bukkit.generator.BlockPopulator;
-import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.LimitedRegion;
 import org.bukkit.generator.WorldInfo;
 
 import dev.imprex.gridworldgenerator.api.GridBlockProvider;
-import dev.imprex.gridworldgenerator.api.Plot;
+import net.minecraft.world.level.WorldGenLevel;
 
-public class GridWorldGenerator extends ChunkGenerator {
-
-	private final GridWorldBuilder builder;
+public class GridWorldBlockPopulator extends BlockPopulator {
 
 	private final int gridWidth;
 	private final int gridHeight;
@@ -37,12 +30,9 @@ public class GridWorldGenerator extends ChunkGenerator {
 	private final int maxChunkX;
 	private final int maxChunkZ;
 
-	private final BlockData gapBlockData;
 	private final GridBlockProvider blockProvider;
 
-	GridWorldGenerator(GridWorldBuilder builder) {
-		this.builder = builder;
-
+	GridWorldBlockPopulator(GridWorldBuilder builder) {
 		this.gridWidth = builder.gridWidth;
 		this.gridHeight = builder.gridHeight;
 		
@@ -61,31 +51,16 @@ public class GridWorldGenerator extends ChunkGenerator {
 		this.maxChunkX = (int) Math.ceil(this.worldWidth / 16d);
 		this.maxChunkZ = (int) Math.ceil(this.worldHeight / 16d);
 
-		this.gapBlockData = builder.gapBlockData;
 		this.blockProvider = builder.blockProvider;
 	}
 
-	public List<Plot> getPlots(World world) {
-		List<Plot> plots = new ArrayList<>();
-
-		Location base = new Location(world, this.gapWidth, 0, this.gapHeight);
-
-		for (int x = 0; x < this.gridWidth; x++) {
-			for (int z = 0; z < this.gridHeight; z++) {
-				Location min = base.clone().add(x * this.strideWidth, 0, z * this.strideHeight);
-				Location max = min.clone().add(this.plotWidth, world.getMaxHeight(), this.plotHeight);
-				plots.add(new Plot(min, max));
-			}
-		}
-
-		return plots;
-	}
-
 	@Override
-	public void generateSurface(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
+	public void populate(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, LimitedRegion limitedRegion) {
 		if (chunkX < 0 || chunkX >= this.maxChunkX || chunkZ < 0 || chunkZ >= this.maxChunkZ) {
 			return;
 		}
+
+		WorldGenLevel level = ((CraftLimitedRegion) limitedRegion).getHandle();
 
 		int maxX = chunkX + 1 == this.maxChunkX && this.worldWidth % 16 != 0 ? this.worldWidth % 16 : 16;
 		int maxZ = chunkZ + 1 == this.maxChunkZ && this.worldHeight % 16 != 0 ? this.worldHeight % 16 : 16;
@@ -99,31 +74,20 @@ public class GridWorldGenerator extends ChunkGenerator {
 				int x = ((positionX + sectionX) % this.strideWidth);
 				int z = ((positionZ + sectionZ) % this.strideHeight);
 
-				boolean gap = x < this.gapWidth || z < this.gapHeight;
+				if (x < this.gapWidth || z < this.gapHeight) {
+					continue;
+				}
+
 				x -= this.gapWidth;
 				z -= this.gapHeight;
 
-				int maxY = gap ? chunkData.getMaxHeight() : chunkData.getMinHeight() + this.blockProvider.getHighestBlockY(x, z);
+				int maxY = level.getMinBuildHeight() + this.blockProvider.getHighestBlockY(x, z);
 
-				for (int sectionY = chunkData.getMinHeight(); sectionY < maxY; sectionY++) {
-					chunkData.setBlock(sectionX, sectionY, sectionZ, gap ? this.gapBlockData
-							: this.blockProvider.getBlock(x, sectionY - chunkData.getMinHeight(), z));
+				for (int sectionY = level.getMinBuildHeight(); sectionY < maxY; sectionY++) {
+					this.blockProvider.populate(x, sectionY - level.getMinBuildHeight(), z,
+							positionX + sectionX, sectionY, positionZ + sectionZ, level);
 				}
 			}
 		}
-
-		chunkData.setRegion(
-				0, chunkData.getMaxHeight() - 4, 0,
-				maxX, chunkData.getMaxHeight(), maxZ, this.gapBlockData);
-	}
-
-	@Override
-	public BiomeProvider getDefaultBiomeProvider(WorldInfo worldInfo) {
-		return new GridWorldBiomeProvider(this.builder);
-	}
-
-	@Override
-	public List<BlockPopulator> getDefaultPopulators(World world) {
-		return List.of(new GridWorldBlockPopulator(this.builder));
 	}
 }
